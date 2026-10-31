@@ -1,0 +1,19 @@
+# Local virtual environment
+.venv/
+
+# Python caches
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Housekeeping scripts that are not part of the project
+Scripts/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
