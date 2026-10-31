@@ -1,14 +1,15 @@
-"""Central configuration for the GradPath AI project.
+"""Central settings for the GradPath AI project.
 
-Every file path, column name, and tuning constant used by the training
-notebook, the reusable modules in src/, and the Streamlit app lives here, so
-there is exactly one place to change them.
+Every file path, column name, and tuning constant used by the notebook, the
+backend layers, and the Streamlit app lives here, so there is exactly one
+place to change them.
 """
 
 from pathlib import Path
 
 # Folder that contains app.py, i.e. the root of this repository.
-PROJECT_ROOT_FOLDER = Path(__file__).resolve().parent.parent
+# This file sits four levels deep: <root>/gradpath/backend/config/settings.py
+PROJECT_ROOT_FOLDER = Path(__file__).resolve().parents[3]
 
 # Where the saved trained models and their metrics file are stored.
 SAVED_MODELS_FOLDER = PROJECT_ROOT_FOLDER / "model"
