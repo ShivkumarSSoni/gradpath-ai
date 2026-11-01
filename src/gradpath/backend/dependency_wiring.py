@@ -13,6 +13,24 @@ from gradpath.backend.config.settings import (
 )
 from gradpath.backend.domain.feature_catalog import STUDENT_FEATURE_CATALOG
 from gradpath.backend.domain.student_outcome import StudentOutcome
+from gradpath.backend.ml.classifier_builders.classifier_registry import (
+    ClassifierRegistry,
+)
+from gradpath.backend.ml.classifier_builders.decision_tree_builder import (
+    DecisionTreeBuilder,
+)
+from gradpath.backend.ml.classifier_builders.gaussian_naive_bayes_builder import (
+    GaussianNaiveBayesBuilder,
+)
+from gradpath.backend.ml.classifier_builders.k_nearest_neighbors_builder import (
+    KNearestNeighborsBuilder,
+)
+from gradpath.backend.ml.classifier_builders.logistic_regression_builder import (
+    LogisticRegressionBuilder,
+)
+from gradpath.backend.ml.classifier_builders.support_vector_machine_builder import (
+    SupportVectorMachineBuilder,
+)
 from gradpath.backend.ml.metrics.scores_calculator import ScoresCalculator
 from gradpath.backend.ml.preprocessing.feature_transformer_builder import (
     FeatureTransformerBuilder,
@@ -48,6 +66,20 @@ def build_data_split_service() -> DataSplitService:
 def build_scores_calculator() -> ScoresCalculator:
     """Create the calculator of the six evaluation scores."""
     return ScoresCalculator(class_labels=StudentOutcome.all_labels())
+
+
+def build_classifier_registry() -> ClassifierRegistry:
+    """Create the registry holding the builders of all five classifiers."""
+    seed = RANDOM_SEED_FOR_REPRODUCIBILITY
+    return ClassifierRegistry(
+        [
+            LogisticRegressionBuilder(random_seed=seed),
+            DecisionTreeBuilder(random_seed=seed),
+            KNearestNeighborsBuilder(),
+            GaussianNaiveBayesBuilder(),
+            SupportVectorMachineBuilder(random_seed=seed),
+        ]
+    )
 
 
 def build_feature_transformer_builder() -> FeatureTransformerBuilder:

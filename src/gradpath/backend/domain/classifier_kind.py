@@ -27,6 +27,6 @@ _DISPLAY_NAMES = {
     ClassifierKind.LOGISTIC_REGRESSION: "Logistic Regression",
     ClassifierKind.DECISION_TREE: "Decision Tree",
     ClassifierKind.K_NEAREST_NEIGHBORS: "K-Nearest Neighbors (kNN)",
-    ClassifierKind.GAUSSIAN_NAIVE_BAYES: "Naive Bayes (Gaussian)",
+    ClassifierKind.GAUSSIAN_NAIVE_BAYES: "Gaussian Naive Bayes",
     ClassifierKind.SUPPORT_VECTOR_MACHINE: "Support Vector Machine (SVM)",
 }
