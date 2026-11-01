@@ -41,6 +41,16 @@ def test_wiring_builds_objects_of_the_expected_types():
     assert isinstance(dependency_wiring.build_data_split_service(), DataSplitService)
 
 
+def test_wired_scores_calculator_uses_the_student_outcome_labels():
+    calculator = dependency_wiring.build_scores_calculator()
+
+    scores = calculator.calculate(
+        ["Dropout", "Graduate"], ["Dropout", "Graduate"], [[1, 0, 0], [0, 0, 1]]
+    )
+
+    assert scores.accuracy == 1.0
+
+
 def test_settings_point_inside_the_repository_root():
     assert (settings.PROJECT_ROOT_FOLDER / "src" / "gradpath").is_dir()
     assert settings.HELD_OUT_TEST_DATA_FILE.parent == settings.PROJECT_ROOT_FOLDER
