@@ -7,8 +7,8 @@ from gradpath.backend.schemas.classifier_training_result import (
     ClassifierTrainingResult,
 )
 from gradpath.backend.schemas.records_split import RecordsSplit
+from gradpath.backend.services.classifier_build_service import ClassifierBuildService
 from gradpath.backend.services.data_preparation_service import DataPreparationService
-from gradpath.backend.services.training_service import TrainingService
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +19,10 @@ class TrainingController:
     def __init__(
         self,
         data_preparation_service: DataPreparationService,
-        training_service: TrainingService,
+        classifier_build_service: ClassifierBuildService,
     ) -> None:
         self._data_preparation_service = data_preparation_service
-        self._training_service = training_service
+        self._classifier_build_service = classifier_build_service
 
     def train_one_classifier(self, classifier_kind: ClassifierKind) -> ClassifierTrainingResult:
         """Train, evaluate and save a single classifier.
@@ -30,7 +30,7 @@ class TrainingController:
         Handy to debug one model without retraining the other four.
         """
         records_split = self._data_preparation_service.prepare_records_split()
-        return self._train_without_stopping_others(classifier_kind, records_split)
+        return self._build_without_stopping_others(classifier_kind, records_split)
 
     def train_all_classifiers(self) -> list[ClassifierTrainingResult]:
         """Train every classifier on one shared split, so the comparison is fair.
@@ -40,17 +40,19 @@ class TrainingController:
         """
         records_split = self._data_preparation_service.prepare_records_split()
         return [
-            self._train_without_stopping_others(classifier_kind, records_split)
-            for classifier_kind in self._training_service.trainable_kinds()
+            self._build_without_stopping_others(classifier_kind, records_split)
+            for classifier_kind in self._classifier_build_service.buildable_kinds()
         ]
 
-    def _train_without_stopping_others(
+    def _build_without_stopping_others(
         self,
         classifier_kind: ClassifierKind,
         records_split: RecordsSplit,
     ) -> ClassifierTrainingResult:
         try:
-            scores = self._training_service.train_and_evaluate(classifier_kind, records_split)
+            scores = self._classifier_build_service.build_classifier(
+                classifier_kind, records_split
+            )
         except Exception as error:  # noqa: BLE001 - any failure must be reported, not raised
             logger.exception("Training %s failed.", classifier_kind.display_name)
             return ClassifierTrainingResult(

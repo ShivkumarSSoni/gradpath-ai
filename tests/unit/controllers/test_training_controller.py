@@ -15,25 +15,25 @@ class FakeDataPreparationService:
         return SPLIT_MARKER
 
 
-class FakeTrainingService:
-    """Pretends to train; fails for the kinds listed in `failing_kinds`."""
+class FakeClassifierBuildService:
+    """Pretends to build classifiers; fails for the kinds listed in `failing_kinds`."""
 
     def __init__(self, failing_kinds=()):
         self._failing_kinds = set(failing_kinds)
-        self.trained_with = []
+        self.built_with = []
 
-    def trainable_kinds(self):
+    def buildable_kinds(self):
         return ClassifierKind.all_kinds()
 
-    def train_and_evaluate(self, classifier_kind, records_split):
+    def build_classifier(self, classifier_kind, records_split):
         if classifier_kind in self._failing_kinds:
             raise RuntimeError("simulated failure")
-        self.trained_with.append((classifier_kind, records_split))
+        self.built_with.append((classifier_kind, records_split))
         return SOME_SCORES
 
 
 def test_train_all_returns_one_successful_result_per_kind():
-    controller = TrainingController(FakeDataPreparationService(), FakeTrainingService())
+    controller = TrainingController(FakeDataPreparationService(), FakeClassifierBuildService())
 
     results = controller.train_all_classifiers()
 
@@ -43,18 +43,18 @@ def test_train_all_returns_one_successful_result_per_kind():
 
 def test_all_classifiers_share_one_split_prepared_once():
     preparation = FakeDataPreparationService()
-    training = FakeTrainingService()
+    build_service = FakeClassifierBuildService()
 
-    TrainingController(preparation, training).train_all_classifiers()
+    TrainingController(preparation, build_service).train_all_classifiers()
 
     assert preparation.prepare_count == 1
-    assert {split for _, split in training.trained_with} == {SPLIT_MARKER}
+    assert {split for _, split in build_service.built_with} == {SPLIT_MARKER}
 
 
 def test_one_failing_classifier_does_not_block_the_others():
     failing_kind = ClassifierKind.K_NEAREST_NEIGHBORS
     controller = TrainingController(
-        FakeDataPreparationService(), FakeTrainingService(failing_kinds=[failing_kind])
+        FakeDataPreparationService(), FakeClassifierBuildService(failing_kinds=[failing_kind])
     )
 
     results = {result.classifier_kind: result for result in controller.train_all_classifiers()}
@@ -66,10 +66,10 @@ def test_one_failing_classifier_does_not_block_the_others():
 
 
 def test_train_one_trains_only_the_requested_classifier():
-    training = FakeTrainingService()
-    controller = TrainingController(FakeDataPreparationService(), training)
+    build_service = FakeClassifierBuildService()
+    controller = TrainingController(FakeDataPreparationService(), build_service)
 
     result = controller.train_one_classifier(ClassifierKind.DECISION_TREE)
 
     assert result.succeeded
-    assert [kind for kind, _ in training.trained_with] == [ClassifierKind.DECISION_TREE]
+    assert [kind for kind, _ in build_service.built_with] == [ClassifierKind.DECISION_TREE]

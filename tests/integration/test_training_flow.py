@@ -15,8 +15,11 @@ from gradpath.backend.repositories.csv_evaluation_results_repository import (
 )
 from gradpath.backend.repositories.interfaces.records_repository import RecordsRepository
 from gradpath.backend.repositories.joblib_model_repository import JoblibModelRepository
+from gradpath.backend.services.classifier_build_service import ClassifierBuildService
 from gradpath.backend.services.data_preparation_service import DataPreparationService
 from gradpath.backend.services.data_split_service import DataSplitService
+from gradpath.backend.services.evaluation_service import EvaluationService
+from gradpath.backend.services.results_recorder_service import ResultsRecorderService
 from gradpath.backend.services.training_service import TrainingService
 
 pytestmark = pytest.mark.integration
@@ -37,20 +40,29 @@ class InMemoryRecordsRepository(RecordsRepository):
 def controller_with_temp_storage(tmp_path, tiny_student_records, tiny_feature_catalog):
     models = JoblibModelRepository(tmp_path / "model")
     results = CsvEvaluationResultsRepository(tmp_path / "results" / "evaluation_results.csv")
+    feature_transformer_builder = FeatureTransformerBuilder(tiny_feature_catalog)
     training_service = TrainingService(
         classifier_registry=dependency_wiring.build_classifier_registry(),
-        feature_transformer_builder=FeatureTransformerBuilder(tiny_feature_catalog),
-        scores_calculator=ScoresCalculator(StudentOutcome.all_labels()),
+        feature_transformer_builder=feature_transformer_builder,
         model_repository=models,
-        evaluation_results_repository=results,
+        feature_catalog=tiny_feature_catalog,
+    )
+    evaluation_service = EvaluationService(
+        model_repository=models,
+        scores_calculator=ScoresCalculator(StudentOutcome.all_labels()),
         feature_catalog=tiny_feature_catalog,
         expected_class_labels=StudentOutcome.all_labels(),
+    )
+    classifier_build_service = ClassifierBuildService(
+        training_service=training_service,
+        evaluation_service=evaluation_service,
+        results_recorder_service=ResultsRecorderService(results),
     )
     preparation = DataPreparationService(
         records_repository=InMemoryRecordsRepository(tiny_student_records),
         data_split_service=DataSplitService("Target", test_fraction=0.2, random_seed=1),
     )
-    return TrainingController(preparation, training_service), models, results
+    return TrainingController(preparation, classifier_build_service), models, results
 
 
 def test_training_all_five_saves_five_models_and_five_score_rows(controller_with_temp_storage):
