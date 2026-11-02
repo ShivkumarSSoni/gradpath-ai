@@ -36,7 +36,7 @@ class InMemoryRecordsRepository(RecordsRepository):
 @pytest.fixture
 def controller_with_temp_storage(tmp_path, tiny_student_records, tiny_feature_catalog):
     models = JoblibModelRepository(tmp_path / "model")
-    results = CsvEvaluationResultsRepository(tmp_path / "model" / "evaluation_results.csv")
+    results = CsvEvaluationResultsRepository(tmp_path / "results" / "evaluation_results.csv")
     training_service = TrainingService(
         classifier_registry=dependency_wiring.build_classifier_registry(),
         feature_transformer_builder=FeatureTransformerBuilder(tiny_feature_catalog),

@@ -55,6 +55,18 @@ def test_every_call_returns_a_new_object():
     assert registry.build_untrained(kind) is not registry.build_untrained(kind)
 
 
+@pytest.mark.parametrize("kind", ClassifierKind.all_kinds())
+def test_every_classifier_chooses_its_settings_by_cross_validation(kind, three_class_data):
+    features, labels = three_class_data
+    classifier = build_classifier_registry().build_untrained(kind)
+
+    classifier.fit(features, labels)
+
+    assert set(classifier.best_params_) == set(classifier.param_grid)
+    for setting_name, chosen_value in classifier.best_params_.items():
+        assert chosen_value in classifier.param_grid[setting_name]
+
+
 def test_unregistered_kind_raises_key_error():
     registry = ClassifierRegistry([DecisionTreeBuilder(random_seed=1)])
     assert registry.registered_kinds() == [ClassifierKind.DECISION_TREE]

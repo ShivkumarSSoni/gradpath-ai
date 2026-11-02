@@ -7,10 +7,13 @@ from gradpath.backend.domain.classifier_kind import ClassifierKind
 from gradpath.backend.ml.classifier_builders.classifier_builder import (
     ClassifierBuilder,
 )
+from gradpath.backend.ml.classifier_builders.cross_validated_tuning import (
+    tune_by_cross_validation,
+)
 
-# Limiting depth and leaf size stops the tree from memorising the training data.
-MAXIMUM_TREE_DEPTH = 6
-MINIMUM_RECORDS_PER_LEAF = 10
+# A shallow tree and large leaves stop the tree from memorising the training data.
+MAXIMUM_TREE_DEPTH_CANDIDATES = [3, 5, 7, 10]
+MINIMUM_RECORDS_PER_LEAF_CANDIDATES = [5, 10, 20]
 
 
 class DecisionTreeBuilder(ClassifierBuilder):
@@ -22,8 +25,11 @@ class DecisionTreeBuilder(ClassifierBuilder):
         return ClassifierKind.DECISION_TREE
 
     def build_untrained(self) -> BaseEstimator:
-        return DecisionTreeClassifier(
-            max_depth=MAXIMUM_TREE_DEPTH,
-            min_samples_leaf=MINIMUM_RECORDS_PER_LEAF,
-            random_state=self._random_seed,
+        return tune_by_cross_validation(
+            DecisionTreeClassifier(random_state=self._random_seed),
+            {
+                "max_depth": MAXIMUM_TREE_DEPTH_CANDIDATES,
+                "min_samples_leaf": MINIMUM_RECORDS_PER_LEAF_CANDIDATES,
+            },
+            self._random_seed,
         )

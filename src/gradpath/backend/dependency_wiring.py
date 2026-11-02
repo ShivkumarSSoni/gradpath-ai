@@ -88,8 +88,8 @@ def build_classifier_registry() -> ClassifierRegistry:
         [
             LogisticRegressionBuilder(random_seed=seed),
             DecisionTreeBuilder(random_seed=seed),
-            KNearestNeighborsBuilder(),
-            GaussianNaiveBayesBuilder(),
+            KNearestNeighborsBuilder(random_seed=seed),
+            GaussianNaiveBayesBuilder(random_seed=seed),
             SupportVectorMachineBuilder(random_seed=seed),
         ]
     )
