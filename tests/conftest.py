@@ -4,8 +4,17 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from gradpath.backend.domain.feature_catalog import STUDENT_FEATURE_CATALOG
+from gradpath.backend.domain.feature_catalog import STUDENT_FEATURE_CATALOG, FeatureCatalog
 from gradpath.backend.domain.student_outcome import StudentOutcome
+
+
+@pytest.fixture
+def tiny_feature_catalog() -> FeatureCatalog:
+    """Describe the columns of `tiny_student_records` (two codes, two measurements)."""
+    return FeatureCatalog(
+        outcome_column=STUDENT_FEATURE_CATALOG.outcome_column,
+        nominal_code_columns=("Marital Status", "Course"),
+    )
 
 
 @pytest.fixture

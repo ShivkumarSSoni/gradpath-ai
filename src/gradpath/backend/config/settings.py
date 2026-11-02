@@ -14,6 +14,9 @@ PROJECT_ROOT_FOLDER = Path(__file__).resolve().parents[4]
 # Where the saved trained models and their metrics file are stored.
 SAVED_MODELS_FOLDER = PROJECT_ROOT_FOLDER / "model"
 
+# One row per classifier with its six scores on the held-out records.
+EVALUATION_RESULTS_FILE = SAVED_MODELS_FOLDER / "evaluation_results.csv"
+
 # Held-out test records that the Streamlit app accepts as an upload.
 HELD_OUT_TEST_DATA_FILE = PROJECT_ROOT_FOLDER / "test_data.csv"
 
