@@ -28,9 +28,11 @@ class EvaluationController:
         upload can never change what the comparison table shows.
         """
         try:
-            self._upload_validation_service.validate(request.records)
+            cleaned_records, warnings = self._upload_validation_service.validate(
+                request.records
+            )
             report = self._evaluation_report_service.build_report(
-                request.classifier_kind, request.records
+                request.classifier_kind, cleaned_records
             )
         except Exception as error:  # noqa: BLE001 - any failure must be reported, not raised
             logger.exception(
@@ -41,4 +43,6 @@ class EvaluationController:
                 classifier_kind=request.classifier_kind,
                 error_message=f"{type(error).__name__}: {error}",
             )
-        return EvaluationResponse(classifier_kind=request.classifier_kind, report=report)
+        return EvaluationResponse(
+            classifier_kind=request.classifier_kind, report=report, warnings=warnings
+        )

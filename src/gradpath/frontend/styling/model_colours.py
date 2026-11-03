@@ -5,6 +5,8 @@ generation script and the Streamlit app always show the same classifier in
 the same colour, so a reader never has to re-learn the colour key.
 """
 
+from matplotlib.colors import Colormap, LinearSegmentedColormap
+
 from gradpath.backend.domain.classifier_kind import ClassifierKind
 
 MODEL_DISPLAY_COLOURS: dict[ClassifierKind, str] = {
@@ -14,3 +16,13 @@ MODEL_DISPLAY_COLOURS: dict[ClassifierKind, str] = {
     ClassifierKind.GAUSSIAN_NAIVE_BAYES: "#8e1b6b",
     ClassifierKind.SUPPORT_VECTOR_MACHINE: "#b01e1e",
 }
+
+
+def build_model_colour_gradient(model_colour: str) -> Colormap:
+    """Return a white-to-`model_colour` gradient, for shading a heatmap.
+
+    Used so the confusion matrix for the selected model is shaded in that
+    model's own fixed colour (instead of always being blue), consistent
+    with every bar chart and curve on the page.
+    """
+    return LinearSegmentedColormap.from_list("model_gradient", ["#ffffff", model_colour])

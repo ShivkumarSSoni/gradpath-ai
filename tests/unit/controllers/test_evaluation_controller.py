@@ -7,14 +7,19 @@ SOME_RECORDS = object()
 
 
 class FakeUploadValidationService:
-    def __init__(self, raises=None):
+    def __init__(self, raises=None, warnings=None, cleaned_records=None):
         self._raises = raises
+        self._warnings = warnings or []
+        self._cleaned_records = cleaned_records
         self.validated = []
 
     def validate(self, records):
         self.validated.append(records)
         if self._raises is not None:
             raise self._raises
+        return self._cleaned_records if self._cleaned_records is not None else records, (
+            self._warnings
+        )
 
 
 class FakeEvaluationReportService:
@@ -40,6 +45,31 @@ def test_a_valid_upload_returns_a_successful_response():
     assert response.succeeded
     assert response.report is SOME_REPORT
     assert validation.validated == [SOME_RECORDS]
+    assert response.warnings == []
+
+
+def test_warnings_from_validation_are_carried_through_on_success():
+    validation = FakeUploadValidationService(warnings=["1 row(s) dropped: missing value."])
+    report_service = FakeEvaluationReportService()
+    controller = EvaluationController(validation, report_service)
+    request = EvaluationRequest(classifier_kind=ClassifierKind.DECISION_TREE, records=SOME_RECORDS)
+
+    response = controller.evaluate_uploaded_records(request)
+
+    assert response.succeeded
+    assert response.warnings == ["1 row(s) dropped: missing value."]
+
+
+def test_the_cleaned_records_from_validation_are_what_gets_scored():
+    cleaned_records = object()
+    validation = FakeUploadValidationService(cleaned_records=cleaned_records)
+    report_service = FakeEvaluationReportService()
+    controller = EvaluationController(validation, report_service)
+    request = EvaluationRequest(classifier_kind=ClassifierKind.DECISION_TREE, records=SOME_RECORDS)
+
+    controller.evaluate_uploaded_records(request)
+
+    assert report_service.built_with == [(ClassifierKind.DECISION_TREE, cleaned_records)]
 
 
 def test_a_failing_validation_is_reported_without_scoring():
