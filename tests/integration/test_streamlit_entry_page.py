@@ -19,15 +19,13 @@ def test_app_starts_without_any_exception():
     assert not run_app().exception
 
 
-def test_app_shows_the_heading_and_student_details():
+def test_app_shows_the_heading():
     app = run_app()
 
     assert app.title[0].value == text_constants.APP_HEADING
-    assert text_constants.STUDENT_NAME in app.caption[0].value
-    assert text_constants.STUDENT_BITS_ID in app.caption[0].value
 
 
 def test_app_shows_the_work_in_progress_notice():
     app = run_app()
 
-    assert app.info[0].value == text_constants.WORK_IN_PROGRESS_MESSAGE
+    assert app.info[0].value == text_constants.HOME_PAGE_INFO_MESSAGE

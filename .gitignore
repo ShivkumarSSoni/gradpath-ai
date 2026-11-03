@@ -9,8 +9,8 @@ __pycache__/
 # Jupyter
 .ipynb_checkpoints/
 
-# Local copy of the downloaded dataset (re-downloaded automatically)
-data/
+# Local copy of the downloaded dataset (DECIDED Nov 3: now committed, not
+# ignored — see CLAUDE.md Section 5 for why).
 
 # Housekeeping scripts that are not part of the project
 Scripts/

@@ -32,5 +32,11 @@ TEST_SPLIT_FRACTION = 0.20
 # Identifier of the UCI dataset "Predict Students' Dropout and Academic Success".
 UCI_DATASET_IDENTIFIER = 697
 
-# Local copy of the downloaded records (this folder is git-ignored).
+# Local copy of the downloaded records. Committed to the repository so the
+# exact dataset used for training is still available even if UCI ever
+# changes or removes it.
 DATASET_CACHE_FILE = PROJECT_ROOT_FOLDER / "data" / "student_records.csv"
+
+# Curve images generated once by tools/generate_curve_images.py and embedded
+# in the notebook and the README, instead of being recomputed on every run.
+IMAGES_FOLDER = PROJECT_ROOT_FOLDER / "docs" / "images"
