@@ -6,6 +6,8 @@ BRAND_TAGLINE = (
     "Predicting whether a student will drop out, stay enrolled, or "
     "graduate, from academic and demographic records."
 )
+GITHUB_REPO_URL = "https://github.com/ShivkumarSSoni/gradpath-ai"
+GITHUB_REPO_LINK_LABEL = "View source on GitHub \u2197"
 DATASET_DESCRIPTION = (
     "UCI dataset: Predict Students' Dropout and Academic Success "
     "(4,424 students, 36 features, 3 outcomes)."

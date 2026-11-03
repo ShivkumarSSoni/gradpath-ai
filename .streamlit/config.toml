@@ -10,3 +10,8 @@ font = "sans serif"
 # Matches the real cap already enforced in backend_gateway.py, so the
 # uploader's own "limit" caption shown to the user is never misleading.
 maxUploadSize = 5
+
+[client]
+# Hides the "Deploy" button in Streamlit's built-in top-right toolbar, since
+# deployment is already complete and that control has no use for a visitor.
+toolbarMode = "viewer"

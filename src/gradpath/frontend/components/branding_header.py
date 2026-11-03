@@ -38,4 +38,11 @@ def render_branding_header() -> None:
         f"{text_constants.BRAND_TAGLINE}</p>",
         unsafe_allow_html=True,
     )
+    st.markdown(
+        f"<p style='text-align:center; margin-top:0.2rem;'>"
+        f"<a href='{text_constants.GITHUB_REPO_URL}' target='_blank' "
+        f"style='color:{BRAND_ACCENT_COLOUR}; font-size:0.85rem; "
+        f"text-decoration:none;'>{text_constants.GITHUB_REPO_LINK_LABEL}</a></p>",
+        unsafe_allow_html=True,
+    )
 
