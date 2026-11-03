@@ -1,14 +1,20 @@
-"""Generates the learning-curve, validation-curve and overfitting-check images.
+"""Generates the learning, validation, ROC, Precision-Recall and calibration
+curve images, plus the overfitting-check table.
 
 A learning curve needs many refits per model and a validation curve needs
 one refit per candidate setting; with a fixed random seed these are
 deterministic, so this script computes them once and writes the resulting
-PNG files to docs/images/, which the notebook and README then embed.
+PNG files to docs/images/, which the notebook and README then embed. The
+ROC, Precision-Recall and calibration curves need no refitting (they only
+score the already-saved pipelines on the held-out students), but they are
+generated here too, as static images, so the same curves shown live in the
+Streamlit app (for whichever file a user uploads) are also visible to
+anyone reading the notebook or the README without running the app.
 
 It never retrains or re-tunes the five saved classifiers and never changes
-model/ or results/evaluation_results.csv: it only reads the training
-records and the already-tuned, already-saved pipelines. A hash check at the
-end of main() confirms that those files are unchanged.
+model/ or results/evaluation_results.csv: it only reads the training and
+held-out records and the already-tuned, already-saved pipelines. A hash
+check at the end of main() confirms that those files are unchanged.
 """
 
 import hashlib
@@ -45,6 +51,7 @@ from gradpath.backend.config.settings import (  # noqa: E402
 )
 from gradpath.backend.dependency_wiring import (  # noqa: E402
     build_data_preparation_service,
+    build_evaluation_report_service,
     build_evaluation_results_repository,
     build_evaluation_service,
     build_feature_transformer_builder,
@@ -68,6 +75,8 @@ from gradpath.backend.ml.classifier_builders.logistic_regression_builder import 
 from gradpath.backend.ml.classifier_builders.support_vector_machine_builder import (  # noqa: E402
     MARGIN_PENALTY_C_CANDIDATES,
 )
+from gradpath.charts.curve_chart import draw_curve_panel  # noqa: E402
+from gradpath.charts.table_image import draw_table_as_image  # noqa: E402
 from gradpath.frontend.styling.model_colours import MODEL_DISPLAY_COLOURS  # noqa: E402
 
 # The same 5-fold stratified cross-validation used to tune every classifier,
@@ -81,6 +90,9 @@ LEARNING_CURVE_TRAINING_SIZE_FRACTIONS = np.linspace(0.1, 1.0, 8)
 LEARNING_CURVES_IMAGE_FILE = IMAGES_FOLDER / "learning_curves.png"
 VALIDATION_CURVES_IMAGE_FILE = IMAGES_FOLDER / "validation_curves.png"
 TRAIN_VS_HELD_OUT_TABLE_IMAGE_FILE = IMAGES_FOLDER / "train_vs_held_out_scores.png"
+ROC_CURVES_IMAGE_FILE = IMAGES_FOLDER / "roc_curves.png"
+PRECISION_RECALL_CURVES_IMAGE_FILE = IMAGES_FOLDER / "precision_recall_curves.png"
+CALIBRATION_CURVES_IMAGE_FILE = IMAGES_FOLDER / "calibration_curves.png"
 
 
 def cross_validation_folds() -> StratifiedKFold:
@@ -252,24 +264,55 @@ def draw_validation_curve(axis, classifier_kind, plan, feature_inputs, outcome_l
     axis.grid(alpha=0.3)
 
 
-def render_table_image(table_frame: pd.DataFrame, file_path: Path, title: str) -> None:
-    """Draw a small dataframe as a PNG table image, matching the notebook's own style."""
-    row_count, col_count = table_frame.shape
-    figure, axis = plt.subplots(figsize=(max(9.0, col_count * 2.6), 0.55 * row_count + 1.4))
-    axis.axis("off")
-    axis.set_title(title, fontsize=12, fontweight="bold", pad=16)
+def render_curve_grid(curve_name: str, curves_by_name_per_kind: dict, file_path: Path, suptitle: str) -> None:
+    """Save a 2x3 grid with one panel per model, each showing `curve_name`.
 
-    table = axis.table(cellText=table_frame.values, colLabels=table_frame.columns, cellLoc="center", loc="center")
-    table.auto_set_font_size(False)
-    table.set_fontsize(10)
-    # Widens each column to fit its longest cell, so long model names (for
-    # example "Support Vector Machine (SVM)") are never cut off at the edge.
-    table.auto_set_column_width(col=list(range(col_count)))
-    table.scale(1.0, 1.7)
-
-    figure.tight_layout()
+    Reuses the exact same `draw_curve_panel` function the Streamlit app
+    calls for one model at a time, so a reader of the notebook or README
+    sees precisely the same lines the app would draw for the held-out file.
+    """
+    classifier_kinds = ClassifierKind.all_kinds()
+    figure, axes = plt.subplots(2, 3, figsize=(16, 9))
+    for axis, classifier_kind in zip(axes.flat, classifier_kinds):
+        curves_by_outcome = curves_by_name_per_kind[classifier_kind].get(curve_name, {})
+        draw_curve_panel(
+            axis,
+            curve_name,
+            curves_by_outcome,
+            MODEL_DISPLAY_COLOURS[classifier_kind],
+            panel_title=classifier_kind.display_name,
+        )
+    # Five models in a 2x3 grid leaves one unused panel; hide it.
+    axes.flat[-1].axis("off")
+    figure.suptitle(suptitle, fontsize=13, fontweight="bold")
+    figure.tight_layout(rect=(0, 0, 1, 0.96))
     figure.savefig(file_path, dpi=150, bbox_inches="tight")
     plt.close(figure)
+
+
+def render_table_image(table_frame: pd.DataFrame, file_path: Path, title: str) -> None:
+    """Save the shared table-image renderer's figure to `file_path` as a PNG."""
+    figure = draw_table_as_image(table_frame, title=title)
+    figure.savefig(file_path, dpi=150, bbox_inches="tight")
+    plt.close(figure)
+
+
+def build_curves_by_name_per_kind() -> dict:
+    """Score every saved model once on the held-out students for their curves.
+
+    Calls the same `EvaluationReportService` the Streamlit app uses, so the
+    ROC, Precision-Recall and calibration points saved here are identical to
+    what the app would show for `test_data.csv`. Read-only: it only predicts
+    with the already-fitted pipelines, never refits or retunes anything.
+    """
+    evaluation_report_service = build_evaluation_report_service()
+    held_out_records = build_data_preparation_service().prepare_records_split().held_out_records
+    return {
+        classifier_kind: evaluation_report_service.build_report(
+            classifier_kind, held_out_records
+        ).curves_by_name
+        for classifier_kind in ClassifierKind.all_kinds()
+    }
 
 
 def build_train_vs_held_out_table() -> pd.DataFrame:
@@ -301,7 +344,7 @@ def build_train_vs_held_out_table() -> pd.DataFrame:
 
 
 def main() -> None:
-    """Generate the learning curves, validation curves and overfitting table."""
+    """Generate the learning, validation and ROC/Precision-Recall/calibration curves, and the overfitting table."""
     protected_files = _protected_files()
     hashes_before = _file_hashes(*protected_files)
 
@@ -379,6 +422,27 @@ def main() -> None:
         "Training versus held-out macro F1 (quick overfitting check, no new fitting)",
     )
 
+    print("Computing ROC, Precision-Recall and calibration curves for the held-out students ...")
+    curves_by_name_per_kind = build_curves_by_name_per_kind()
+    render_curve_grid(
+        "ROC",
+        curves_by_name_per_kind,
+        ROC_CURVES_IMAGE_FILE,
+        "ROC curves, one-vs-rest per outcome (held-out students)",
+    )
+    render_curve_grid(
+        "Precision-Recall",
+        curves_by_name_per_kind,
+        PRECISION_RECALL_CURVES_IMAGE_FILE,
+        "Precision-Recall curves, one-vs-rest per outcome (held-out students)",
+    )
+    render_curve_grid(
+        "Calibration",
+        curves_by_name_per_kind,
+        CALIBRATION_CURVES_IMAGE_FILE,
+        "Calibration curves, one-vs-rest per outcome (held-out students)",
+    )
+
     hashes_after = _file_hashes(*protected_files)
     if hashes_before != hashes_after:
         raise RuntimeError(
@@ -389,6 +453,9 @@ def main() -> None:
     print(f"Saved {LEARNING_CURVES_IMAGE_FILE}")
     print(f"Saved {VALIDATION_CURVES_IMAGE_FILE}")
     print(f"Saved {TRAIN_VS_HELD_OUT_TABLE_IMAGE_FILE}")
+    print(f"Saved {ROC_CURVES_IMAGE_FILE}")
+    print(f"Saved {PRECISION_RECALL_CURVES_IMAGE_FILE}")
+    print(f"Saved {CALIBRATION_CURVES_IMAGE_FILE}")
     print("model/ and results/evaluation_results.csv are unchanged (hash check passed).")
 
 

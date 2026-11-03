@@ -30,7 +30,6 @@ RUN_BUTTON_CAPTION = (
 MISSING_FILE_WARNING_MESSAGE = "Upload a test CSV before selecting Run Evaluation."
 
 # Status and recap.
-RUN_RECAP_TEMPLATE = "**{file_name}** ({row_count} row(s)) scored with **{model_name}**."
 EVALUATION_SUCCESS_MESSAGE = "Evaluation complete."
 UPLOAD_ERROR_PREFIX = "This file could not be scored: "
 

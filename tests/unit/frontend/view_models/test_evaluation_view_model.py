@@ -1,7 +1,5 @@
 """Unit tests for turning an EvaluationResponse into display-ready data."""
 
-import math
-
 from gradpath.backend.domain.classifier_kind import ClassifierKind
 from gradpath.backend.domain.evaluation_report import EvaluationReport
 from gradpath.backend.domain.evaluation_scores import EvaluationScores
@@ -56,22 +54,12 @@ def test_build_metric_cards_covers_all_six_metrics_with_nan_handled():
     }
 
 
-def test_confusion_matrix_rows_are_normalised_to_percent():
+def test_confusion_matrix_view_exposes_labels_and_raw_counts():
     scores = EvaluationScores(accuracy=1.0, auc=1.0, precision=1.0, recall=1.0, f1=1.0, mcc=1.0)
     view = build_confusion_matrix_view(make_response(scores))
 
-    assert view.row_percentages[0] == [80.0, 10.0, 10.0]
-    assert math.isclose(sum(view.row_percentages[1]), 100.0)
-
-
-def test_confusion_matrix_handles_a_row_with_zero_records():
-    scores = EvaluationScores(accuracy=1.0, auc=1.0, precision=1.0, recall=1.0, f1=1.0, mcc=1.0)
-    response = make_response(scores)
-    response.report.confusion_matrix[1] = [0, 0, 0]
-
-    view = build_confusion_matrix_view(response)
-
-    assert view.row_percentages[1] == [0.0, 0.0, 0.0]
+    assert view.labels == ["Dropout", "Enrolled", "Graduate"]
+    assert view.counts == [[8, 1, 1], [0, 5, 0], [2, 0, 10]]
 
 
 def test_classification_report_rows_follow_the_fixed_outcome_order():

@@ -8,6 +8,8 @@ and the curves.
 
 import streamlit as st
 
+from gradpath.frontend.styling.brand_colours import BRAND_TEXT_COLOUR
+
 _CARDS_PER_ROW = 3
 
 _CARD_TEMPLATE = """
@@ -25,7 +27,7 @@ _CARD_TEMPLATE = """
         letter-spacing: 0.06em;
         font-size: 0.72rem;
         font-weight: 600;
-        color: #8a94a6;
+        color: {text_colour};
         margin-bottom: 0.4rem;
     ">{label}</div>
     <div style="
@@ -46,6 +48,11 @@ def render_metric_cards(metrics: list[tuple[str, str]], model_colour: str) -> No
         for column, (label, value) in zip(columns, row_metrics):
             with column:
                 st.markdown(
-                    _CARD_TEMPLATE.format(label=label.upper(), colour=model_colour, value=value),
+                    _CARD_TEMPLATE.format(
+                        label=label.upper(),
+                        colour=model_colour,
+                        value=value,
+                        text_colour=BRAND_TEXT_COLOUR,
+                    ),
                     unsafe_allow_html=True,
                 )

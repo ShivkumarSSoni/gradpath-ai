@@ -1,5 +1,9 @@
-from gradpath.backend.controllers.evaluation_controller import EvaluationController
+from gradpath.backend.controllers.evaluation_controller import (
+    GENERIC_SCORING_FAILURE_MESSAGE,
+    EvaluationController,
+)
 from gradpath.backend.domain.classifier_kind import ClassifierKind
+from gradpath.backend.exceptions.invalid_records_error import InvalidRecordsError
 from gradpath.backend.schemas.evaluation_request import EvaluationRequest
 
 SOME_REPORT = object()
@@ -73,7 +77,7 @@ def test_the_cleaned_records_from_validation_are_what_gets_scored():
 
 
 def test_a_failing_validation_is_reported_without_scoring():
-    validation = FakeUploadValidationService(raises=ValueError("bad file"))
+    validation = FakeUploadValidationService(raises=InvalidRecordsError("bad file"))
     report_service = FakeEvaluationReportService()
     controller = EvaluationController(validation, report_service)
     request = EvaluationRequest(classifier_kind=ClassifierKind.DECISION_TREE, records=SOME_RECORDS)
@@ -81,11 +85,12 @@ def test_a_failing_validation_is_reported_without_scoring():
     response = controller.evaluate_uploaded_records(request)
 
     assert not response.succeeded
-    assert "bad file" in response.error_message
+    assert response.error_message == "bad file"
+    assert "InvalidRecordsError" not in response.error_message
     assert report_service.built_with == []
 
 
-def test_a_failing_scoring_is_reported_as_an_error_response():
+def test_an_unexpected_scoring_failure_shows_a_generic_message_not_the_raw_error():
     validation = FakeUploadValidationService()
     report_service = FakeEvaluationReportService(raises=RuntimeError("scoring failed"))
     controller = EvaluationController(validation, report_service)
@@ -94,4 +99,6 @@ def test_a_failing_scoring_is_reported_as_an_error_response():
     response = controller.evaluate_uploaded_records(request)
 
     assert not response.succeeded
-    assert "scoring failed" in response.error_message
+    assert response.error_message == GENERIC_SCORING_FAILURE_MESSAGE
+    assert "scoring failed" not in response.error_message
+    assert "RuntimeError" not in response.error_message

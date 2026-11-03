@@ -8,18 +8,19 @@ place so no other module needs to inject raw `<style>` blocks of its own.
 
 import streamlit as st
 
-from gradpath.frontend.styling.brand_colours import MUTED_TEXT_COLOUR
+from gradpath.frontend.styling.brand_colours import BRAND_TEXT_COLOUR
 
 _GLOBAL_CSS = f"""
 <style>
-/* Uppercase, letter-spaced, muted micro-labels above the model dropdown
-   and the file uploader, matching the mock's "SELECT MODEL" style. */
+/* Uppercase, letter-spaced micro-labels above the model dropdown and the
+   file uploader, matching the mock's "SELECT MODEL" style. Dark, not
+   muted, so they stay readable on a white background. */
 [data-testid="stWidgetLabel"] p {{
     text-transform: uppercase;
     letter-spacing: 0.06em;
     font-size: 0.75rem;
     font-weight: 600;
-    color: {MUTED_TEXT_COLOUR};
+    color: {BRAND_TEXT_COLOUR};
 }}
 
 /* A crisp white, bordered dropdown control instead of the default

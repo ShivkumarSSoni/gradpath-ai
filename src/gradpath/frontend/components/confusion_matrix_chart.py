@@ -1,52 +1,31 @@
-"""Confusion matrix heatmap, row-normalised, drawn with matplotlib."""
+"""Confusion matrix heatmap for the app, drawn with the same shared chart
+function used by the notebook and the README image script.
+"""
 
 import matplotlib.pyplot as plt
-import numpy as np
-import seaborn as sns
 import streamlit as st
 
 from gradpath.backend.domain.classifier_kind import ClassifierKind
-from gradpath.frontend.styling.model_colours import MODEL_DISPLAY_COLOURS, build_model_colour_gradient
+from gradpath.charts.confusion_matrix_chart import draw_confusion_matrix_panel
+from gradpath.frontend.styling.model_colours import MODEL_DISPLAY_COLOURS
 from gradpath.frontend.view_models.evaluation_view_model import ConfusionMatrixView
 
 
 def render_confusion_matrix(view: ConfusionMatrixView, classifier_kind: ClassifierKind) -> None:
-    """Draw a heatmap of row percentages, shaded in the selected model's own colour.
+    """Draw the selected model's confusion matrix, shaded in its own fixed colour.
 
-    Each model has a fixed colour used consistently in the bar charts and
-    curves elsewhere on the page; the heatmap now reuses that same colour
-    (as a white-to-colour gradient) instead of always being blue.
+    Uses the exact same drawing function as the notebook and the README
+    image script, so the app never shows a different-looking chart for the
+    same data.
     """
-    percentage_matrix = np.array(view.row_percentages)
-    count_matrix = np.array(view.counts)
-    outcome_count = len(view.labels)
-    annotations = np.array(
-        [
-            [
-                f"{percentage_matrix[row][col]:.0f}%\n({count_matrix[row][col]})"
-                for col in range(outcome_count)
-            ]
-            for row in range(outcome_count)
-        ]
+    figure, axis = plt.subplots(figsize=(5.5, 4.6))
+    draw_confusion_matrix_panel(
+        axis,
+        view.counts,
+        view.labels,
+        classifier_kind.display_name,
+        MODEL_DISPLAY_COLOURS[classifier_kind],
     )
-
-    colour_gradient = build_model_colour_gradient(MODEL_DISPLAY_COLOURS[classifier_kind])
-    figure, axes = plt.subplots(figsize=(5, 4))
-    sns.heatmap(
-        percentage_matrix,
-        annot=annotations,
-        fmt="",
-        cmap=colour_gradient,
-        vmin=0,
-        vmax=100,
-        xticklabels=[f"Prediction: {label}" for label in view.labels],
-        yticklabels=[f"Actual: {label}" for label in view.labels],
-        cbar=False,
-        linewidths=0.5,
-        linecolor="white",
-        ax=axes,
-    )
-    axes.set_ylabel("")
-    axes.set_xlabel("")
     figure.tight_layout()
     st.pyplot(figure, clear_figure=True)
+

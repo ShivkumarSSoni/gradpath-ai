@@ -2,10 +2,18 @@
 
 import logging
 
+from gradpath.backend.exceptions.invalid_records_error import InvalidRecordsError
 from gradpath.backend.schemas.evaluation_request import EvaluationRequest
 from gradpath.backend.schemas.evaluation_response import EvaluationResponse
 from gradpath.backend.services.evaluation_report_service import EvaluationReportService
 from gradpath.backend.services.upload_validation_service import UploadValidationService
+
+# Shown for any failure that is not a recognised InvalidRecordsError, so an
+# internal exception class name or raw message is never exposed to the user.
+GENERIC_SCORING_FAILURE_MESSAGE = (
+    "This file could not be scored due to an unexpected problem. "
+    "Please try a different file."
+)
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +42,24 @@ class EvaluationController:
             report = self._evaluation_report_service.build_report(
                 request.classifier_kind, cleaned_records
             )
-        except Exception as error:  # noqa: BLE001 - any failure must be reported, not raised
+        except InvalidRecordsError as error:
+            # The message on this exception is already plain-English and
+            # safe to show as-is, with no internal class name attached.
+            logger.exception(
+                "Evaluating %s on an uploaded file failed validation.",
+                request.classifier_kind.display_name,
+            )
+            return EvaluationResponse(
+                classifier_kind=request.classifier_kind, error_message=str(error)
+            )
+        except Exception:  # noqa: BLE001 - any failure must be reported, not raised
             logger.exception(
                 "Evaluating %s on an uploaded file failed.",
                 request.classifier_kind.display_name,
             )
             return EvaluationResponse(
                 classifier_kind=request.classifier_kind,
-                error_message=f"{type(error).__name__}: {error}",
+                error_message=GENERIC_SCORING_FAILURE_MESSAGE,
             )
         return EvaluationResponse(
             classifier_kind=request.classifier_kind, report=report, warnings=warnings

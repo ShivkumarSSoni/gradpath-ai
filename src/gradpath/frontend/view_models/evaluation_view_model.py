@@ -83,30 +83,20 @@ def build_metric_cards(response: EvaluationResponse) -> list[tuple[str, str]]:
 
 @dataclass(frozen=True)
 class ConfusionMatrixView:
-    """Display-ready confusion matrix: raw counts and row percentages."""
+    """Display-ready confusion matrix: labels in row/column order and raw counts.
+
+    Row-share and shading computations live in `gradpath.charts`, the single
+    shared chart module also used by the notebook and the README image
+    script, so they are not duplicated here.
+    """
 
     labels: list[str]
     counts: list[list[int]]
-    row_percentages: list[list[float]]
 
 
 def build_confusion_matrix_view(response: EvaluationResponse) -> ConfusionMatrixView:
-    """Normalise each row of the confusion matrix to a percentage of that row.
-
-    A row with zero records (an outcome entirely missing from the upload)
-    would divide by zero; its percentages are all shown as 0 instead.
-    """
-    counts = response.report.confusion_matrix
-    row_percentages = []
-    for row in counts:
-        row_total = sum(row)
-        if row_total == 0:
-            row_percentages.append([0.0] * len(row))
-        else:
-            row_percentages.append([100.0 * value / row_total for value in row])
-    return ConfusionMatrixView(
-        labels=_OUTCOME_LABELS, counts=counts, row_percentages=row_percentages
-    )
+    """Return the confusion matrix's labels and raw counts, ready for charting."""
+    return ConfusionMatrixView(labels=_OUTCOME_LABELS, counts=response.report.confusion_matrix)
 
 
 def build_classification_report_rows(response: EvaluationResponse) -> list[dict]:

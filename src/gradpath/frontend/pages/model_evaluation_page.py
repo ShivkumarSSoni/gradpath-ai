@@ -8,6 +8,8 @@ curves (which belong to the selected model, not the comparison) still
 appear last on the page, matching the confirmed section order.
 """
 
+import html
+
 import streamlit as st
 
 from gradpath.frontend.components import (
@@ -26,6 +28,7 @@ from gradpath.frontend.state.session_state_manager import (
     store_last_run,
 )
 from gradpath.frontend.styling import text_constants
+from gradpath.frontend.styling.brand_colours import BRAND_TEXT_COLOUR
 from gradpath.frontend.styling.model_colours import MODEL_DISPLAY_COLOURS
 from gradpath.frontend.view_models import evaluation_view_model
 from gradpath.frontend.view_models.evaluation_view_model import run_evaluation
@@ -80,21 +83,25 @@ def _render_control_panel():
             evaluation_view_model.list_classifier_options()
         )
         uploaded_file = csv_uploader.render_csv_uploader()
-        run_clicked = st.button(
-            text_constants.RUN_BUTTON_LABEL, use_container_width=True, type="primary"
-        )
+        # A narrow, centred button column keeps "Run Evaluation" at a
+        # natural width instead of stretching across the whole control panel.
+        _left_spacer, button_column, _right_spacer = st.columns([1, 1, 1])
+        with button_column:
+            run_clicked = st.button(
+                text_constants.RUN_BUTTON_LABEL, use_container_width=True, type="primary"
+            )
         st.caption(text_constants.RUN_BUTTON_CAPTION)
     return classifier_kind, uploaded_file, run_clicked
 
 
 def _render_recap_and_status(stored_run: StoredEvaluationRun) -> None:
     """Render the recap line, then a success, error or warning banner."""
-    st.caption(
-        text_constants.RUN_RECAP_TEMPLATE.format(
-            file_name=stored_run.file_name,
-            row_count=stored_run.row_count,
-            model_name=stored_run.classifier_kind.display_name,
-        )
+    st.markdown(
+        f"<p style='color:{BRAND_TEXT_COLOUR}; font-size:0.95rem;'>"
+        f"<strong>{html.escape(stored_run.file_name)}</strong> "
+        f"({stored_run.row_count} row(s)) scored with "
+        f"<strong>{html.escape(stored_run.classifier_kind.display_name)}</strong>.</p>",
+        unsafe_allow_html=True,
     )
     response = stored_run.response
     if not response.succeeded:
@@ -102,8 +109,22 @@ def _render_recap_and_status(stored_run: StoredEvaluationRun) -> None:
         return
 
     feedback_banner.render_success(text_constants.EVALUATION_SUCCESS_MESSAGE)
+    _render_model_name_banner(stored_run.classifier_kind)
     for warning in response.warnings:
         feedback_banner.render_warning(warning)
+
+
+def _render_model_name_banner(classifier_kind) -> None:
+    """Render a left-indented banner naming the model, in its unique colour."""
+    model_colour = MODEL_DISPLAY_COLOURS[classifier_kind]
+    st.markdown(
+        f"<div style='border-left: 4px solid {model_colour}; "
+        f"padding: 0.4rem 0.9rem; margin: 0.5rem 0; "
+        f"background-color: {model_colour}1a;'>"
+        f"<span style='color:{model_colour}; font-weight:700; font-size:1.05rem;'>"
+        f"{html.escape(classifier_kind.display_name)}</span></div>",
+        unsafe_allow_html=True,
+    )
 
 
 def _render_uploaded_file_section(stored_run: StoredEvaluationRun) -> None:

@@ -5,3 +5,8 @@ backgroundColor = "#f5f7fa"
 secondaryBackgroundColor = "#eef2f8"
 textColor = "#1b2430"
 font = "sans serif"
+
+[server]
+# Matches the real cap already enforced in backend_gateway.py, so the
+# uploader's own "limit" caption shown to the user is never misleading.
+maxUploadSize = 5

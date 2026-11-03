@@ -11,7 +11,7 @@ from gradpath.backend.domain.classifier_kind import ClassifierKind
 from gradpath.backend.domain.comparison_row import ComparisonRow
 from gradpath.frontend import backend_gateway
 from gradpath.frontend.view_models.evaluation_view_model import format_metric_value
-from gradpath.frontend.view_models.model_observations import MODEL_OBSERVATIONS
+from gradpath.frontend.view_models.model_observations import build_observation_text
 
 METRIC_NAMES = ["Accuracy", "AUC", "Precision", "Recall", "F1", "MCC"]
 
@@ -128,7 +128,10 @@ def _build_observation_rows(rows: list[ComparisonRow]) -> list[dict]:
         {
             "classifier_kind": row.classifier_kind,
             "Model": row.display_name,
-            "Observation": MODEL_OBSERVATIONS[row.classifier_kind],
+            "Observation": build_observation_text(
+                row.classifier_kind,
+                row.scores.as_display_dict() if row.is_available else {},
+            ),
         }
         for row in rows
     ]

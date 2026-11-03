@@ -6,7 +6,7 @@ from gradpath.frontend.styling import text_constants
 from gradpath.frontend.styling.brand_colours import (
     BRAND_ACCENT_COLOUR,
     BRAND_TEXT_COLOUR,
-    MUTED_TEXT_COLOUR,
+    TAGLINE_COLOUR,
 )
 
 
@@ -31,7 +31,10 @@ def render_branding_header() -> None:
         unsafe_allow_html=True,
     )
     st.markdown(
-        f"<p style='text-align:center; color:{MUTED_TEXT_COLOUR};'>"
+        f"<p style='text-align:center; color:{TAGLINE_COLOUR}; "
+        f"font-family:Georgia, \"Times New Roman\", serif; "
+        f"font-size:1.15rem; font-weight:500; letter-spacing:0.3px; "
+        f"margin-top:0.35rem;'>"
         f"{text_constants.BRAND_TAGLINE}</p>",
         unsafe_allow_html=True,
     )
