@@ -272,7 +272,7 @@ def render_curve_grid(curve_name: str, curves_by_name_per_kind: dict, file_path:
     sees precisely the same lines the app would draw for the held-out file.
     """
     classifier_kinds = ClassifierKind.all_kinds()
-    figure, axes = plt.subplots(2, 3, figsize=(16, 9))
+    figure, axes = plt.subplots(3, 2, figsize=(11, 13))
     for axis, classifier_kind in zip(axes.flat, classifier_kinds):
         curves_by_outcome = curves_by_name_per_kind[classifier_kind].get(curve_name, {})
         draw_curve_panel(
@@ -281,6 +281,7 @@ def render_curve_grid(curve_name: str, curves_by_name_per_kind: dict, file_path:
             curves_by_outcome,
             MODEL_DISPLAY_COLOURS[classifier_kind],
             panel_title=classifier_kind.display_name,
+            title_colour=MODEL_DISPLAY_COLOURS[classifier_kind],
         )
     # Five models in a 2x3 grid leaves one unused panel; hide it.
     axes.flat[-1].axis("off")
@@ -359,8 +360,8 @@ def main() -> None:
 
     IMAGES_FOLDER.mkdir(parents=True, exist_ok=True)
 
-    learning_curve_figure, learning_curve_axes = plt.subplots(2, 3, figsize=(16, 9))
-    validation_curve_figure, validation_curve_axes = plt.subplots(2, 3, figsize=(16, 9))
+    learning_curve_figure, learning_curve_axes = plt.subplots(3, 2, figsize=(11, 13))
+    validation_curve_figure, validation_curve_axes = plt.subplots(3, 2, figsize=(11, 13))
 
     classifier_kinds = ClassifierKind.all_kinds()
     for axis_index, classifier_kind in enumerate(classifier_kinds):

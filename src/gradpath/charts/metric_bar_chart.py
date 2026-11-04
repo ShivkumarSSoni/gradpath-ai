@@ -3,6 +3,8 @@ sorted best first, the exact score above every bar, and every model's bar,
 value label and name caption coloured in that model's own fixed colour.
 """
 
+import matplotlib.pyplot as plt
+
 
 def draw_metric_bar_panel(axis, ranked_entries, metric_name) -> None:
     """Draw one metric's bars onto `axis`, best score first.
@@ -37,3 +39,30 @@ def draw_metric_bar_panel(axis, ranked_entries, metric_name) -> None:
     # hundredths stay visible; the bar labels still show the true values.
     axis.set_ylim(min(values) - 0.08, max(values) + 0.04)
     axis.set_title(metric_name, fontsize=12)
+
+
+def render_metric_bar_grid(metric_names, ranked_entries_by_metric, grid_shape=(3, 2), figure_size=(11, 13)):
+    """Build a grid figure with one panel per metric, shared by the
+    notebook and the README image generator so the grid is assembled once.
+
+    Args:
+        metric_names: The metric names, one per panel, in panel order.
+        ranked_entries_by_metric: Maps each metric name to the list of
+            (display_name, value, colour) tuples `draw_metric_bar_panel`
+            expects, already sorted best first.
+        grid_shape: (rows, cols) of the subplot grid.
+        figure_size: (width, height) in inches passed to `plt.subplots`.
+
+    Returns:
+        The matplotlib Figure, not yet saved or closed.
+    """
+    figure, axes = plt.subplots(*grid_shape, figsize=figure_size)
+    flat_axes = axes.ravel()
+    for axis, metric_name in zip(flat_axes, metric_names):
+        draw_metric_bar_panel(axis, ranked_entries_by_metric[metric_name], metric_name)
+    for unused_axis in flat_axes[len(metric_names):]:
+        unused_axis.axis("off")
+
+    figure.suptitle("Held-out scores of the five classifiers (best first in each panel)", fontsize=14)
+    figure.tight_layout()
+    return figure

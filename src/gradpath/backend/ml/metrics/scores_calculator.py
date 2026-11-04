@@ -1,4 +1,4 @@
-"""Computes the six evaluation scores required by the assignment."""
+"""Computes the six evaluation scores used to compare the classifiers."""
 
 import warnings
 

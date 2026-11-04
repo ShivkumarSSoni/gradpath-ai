@@ -77,3 +77,49 @@ def draw_confusion_matrix_panel(axis, count_matrix, labels, model_name, model_co
     axis.set_title(f"Confusion matrix: {model_name}", fontsize=11, fontweight="bold", color=model_colour)
     axis.set_xlabel("Predicted outcome")
     axis.set_ylabel("Actual outcome")
+
+
+def render_confusion_matrix_grid(panels, labels, grid_shape=(3, 2), figure_size=(11, 13)):
+    """Build a grid figure of confusion-matrix panels, shared by the
+    notebook and the README image generator so the grid is assembled once.
+
+    One panel beyond `len(panels)` is reserved for a reading guide that
+    explains how to read the other panels; any further unused panels are
+    hidden.
+
+    Args:
+        panels: A list of (model_name, model_colour, count_matrix) tuples,
+            one per classifier.
+        labels: Outcome class names, in row/column order.
+        grid_shape: (rows, cols) of the subplot grid.
+        figure_size: (width, height) in inches passed to `plt.subplots`.
+
+    Returns:
+        The matplotlib Figure, not yet saved or closed.
+    """
+    figure, axes = plt.subplots(*grid_shape, figsize=figure_size)
+    flat_axes = axes.ravel()
+    for axis, (model_name, model_colour, count_matrix) in zip(flat_axes, panels):
+        draw_confusion_matrix_panel(axis, count_matrix, labels, model_name, model_colour)
+
+    reading_guide_axis = flat_axes[len(panels)]
+    reading_guide_axis.axis("off")
+    reading_guide_axis.text(
+        0.0, 0.95,
+        "How to read a confusion matrix\n\n"
+        "Rows: the actual outcome.\n"
+        "Columns: the predicted outcome.\n\n"
+        "Each cell shows the number of students\n"
+        "and, below it, the share of that actual\n"
+        "outcome (each row adds up to 100%).\n\n"
+        "Black outline: correct predictions.\n"
+        "Other cells: mistakes.\n\n"
+        "Darker shade = larger share of the row.",
+        va="top", ha="left", fontsize=12, transform=reading_guide_axis.transAxes,
+    )
+    for unused_axis in flat_axes[len(panels) + 1:]:
+        unused_axis.axis("off")
+
+    figure.suptitle("Confusion matrices of the five classifiers on the held-out students", fontsize=14)
+    figure.tight_layout(rect=(0, 0, 1, 0.97))
+    return figure

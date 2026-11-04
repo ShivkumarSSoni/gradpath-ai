@@ -19,6 +19,7 @@ def draw_curve_panel(
     title_fontsize: int = 9,
     legend_fontsize: int = 6,
     line_width: float = 1.5,
+    title_colour: str | None = None,
 ) -> None:
     """Draw one curve panel onto `axis`, one line per outcome that has a curve.
 
@@ -38,6 +39,10 @@ def draw_curve_panel(
         legend_fontsize: Font size of the outcome legend, same reasoning as
             `title_fontsize`.
         line_width: Width of each plotted line, same reasoning as above.
+        title_colour: Colour of the axis title text. Left as the default
+            black when not given, which keeps the app's single-model panel
+            unchanged; a model grid passes its classifier's own colour, to
+            match the confusion-matrix and metric-bar-chart grids.
     """
     if not curves_by_outcome:
         axis.text(
@@ -56,5 +61,15 @@ def draw_curve_panel(
                 label=f"{outcome} ({points.summary_score:.2f})",
             )
         axis.legend(fontsize=legend_fontsize)
-    axis.set_title(panel_title if panel_title is not None else curve_name, fontsize=title_fontsize)
+    # matplotlib rejects color=None outright, so the keyword is only added
+    # when a title_colour was actually supplied (grid contexts); the app's
+    # single-model panel keeps matplotlib's own default title colour.
+    title_style_kwargs = {"fontsize": title_fontsize, "fontweight": "normal"}
+    if title_colour is not None:
+        title_style_kwargs["color"] = title_colour
+        title_style_kwargs["fontweight"] = "bold"
+    axis.set_title(
+        panel_title if panel_title is not None else curve_name,
+        **title_style_kwargs,
+    )
     axis.tick_params(labelsize=max(legend_fontsize, 8))
