@@ -30,6 +30,7 @@ RUN_BUTTON_CAPTION = (
     "is retrained."
 )
 MISSING_FILE_WARNING_MESSAGE = "Upload a test CSV before selecting Run Evaluation."
+EVALUATION_SPINNER_MESSAGE = "Scoring your file with the selected model..."
 
 # Status and recap.
 EVALUATION_SUCCESS_MESSAGE = "Evaluation complete."

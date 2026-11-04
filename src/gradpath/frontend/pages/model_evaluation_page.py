@@ -45,7 +45,8 @@ def render_input_and_results() -> StoredEvaluationRun | None:
     classifier_kind, uploaded_file, run_clicked = _render_control_panel()
 
     if run_clicked:
-        new_run = run_evaluation(classifier_kind, uploaded_file)
+        with st.spinner(text_constants.EVALUATION_SPINNER_MESSAGE):
+            new_run = run_evaluation(classifier_kind, uploaded_file)
         if new_run is None:
             feedback_banner.render_warning(text_constants.MISSING_FILE_WARNING_MESSAGE)
         else:

@@ -146,8 +146,10 @@ Further patterns worth noting:
 | `data/student_records.csv` | A committed local cache of the full UCI dataset |
 | `docs/images/` | The dataset, score comparison, confusion matrix and curve images embedded above |
 | `src/gradpath/` | The importable backend and frontend package described in Section 7.5 |
-| `tests/` | Unit and integration tests |
+| `runtime.txt` | Pins the Python version (3.12) the hosting platform should use to run this app |
 | `tools/` | The scripts that generate the images in `docs/images/` |
+| `tests/` | Unit and integration tests |
+
 
 ## 5. Streamlit app
 

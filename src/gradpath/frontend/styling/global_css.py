@@ -24,10 +24,34 @@ _GLOBAL_CSS = f"""
 }}
 
 /* A crisp white, bordered dropdown control instead of the default
-   theme-tinted background, so it reads as a clean input field. */
-[data-testid="stSelectbox"] div[data-baseweb="select"] > div {{
-    background-color: #ffffff;
-    border: 1px solid #d7dee8;
+   theme-tinted background, so it reads as a clean input field. Targets the
+   widget's accessible "group" role rather than an emotion-generated class
+   name, since those class names are not stable across Streamlit builds. */
+[data-testid="stSelectbox"] [role="group"] {{
+    background-color: #ffffff !important;
+    border: 1px solid #8aa0bd !important;
+}}
+
+/* The file uploader's dropzone ships with no visible border at all, so it
+   reads as a plain grey panel rather than a distinct drop target. Give it
+   the same border colour and a slightly thicker line than the dropdown
+   above, so it is unmistakably a bordered upload control. */
+[data-testid="stFileUploaderDropzone"] {{
+    border: 2px solid #8aa0bd !important;
+}}
+
+/* Bordered section containers (Uploaded file, Metrics, Confusion matrix,
+   Curves, Comparison) use Streamlit's own default border colour, which is
+   too close to the page background to read clearly. A slightly darker,
+   brand-toned grey keeps each section visually distinct. */
+[data-testid="stVerticalBlockBorderWrapper"] {{
+    border-color: #b9c4d4 !important;
+}}
+
+/* st.divider() renders as a plain <hr>; darken it to the same level of
+   contrast as the container borders above. */
+hr {{
+    border-top: 1px solid #b9c4d4 !important;
 }}
 </style>
 """
