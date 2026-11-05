@@ -3,11 +3,6 @@
 Predicting whether a student will drop out, stay enrolled, or graduate, from
 academic and demographic records.
 
-- **Repository:** https://github.com/ShivkumarSSoni/gradpath-ai
-
-- **Live app:** https://gradpath-ai.streamlit.app/
-
-
 ## 1. Problem statement
 
 Student attrition is a real, costly problem for any academic institution: a
@@ -52,7 +47,11 @@ shares in both groups. The held-out 885 students are saved as `test_data.csv`
 in this repository and are never used for training; they are what the
 Streamlit app scores by default and what every metric below is measured on.
 
-## 3. Models used
+## 3. GitHub Repository Link
+
+- **Repository:** https://github.com/ShivkumarSSoni/gradpath-ai
+
+## 4. Models used
 
 This project fixes all five classifiers below as the basis for
 comparison; the choices made here are
@@ -74,7 +73,7 @@ The same preprocessing is therefore always applied automatically, whether
 the data is the held-out set, a notebook check, or a file uploaded to the
 app.
 
-### 3.1 Comparison table
+### 4.1 Comparison table
 
 Read directly from `results/evaluation_results.csv`, the single source of
 truth also used by the notebook and the Streamlit app.
@@ -105,7 +104,7 @@ The Support Vector Machine's probabilities, needed for its AUC, come from a
 sigmoid calibration step wrapped around it, since an SVM does not produce
 probabilities on its own.
 
-### 3.2 Observations table
+### 4.2 Observations table
 
 | Model | Observation |
 |---|---|
@@ -127,32 +126,32 @@ Further patterns worth noting:
   macro-averaged scores and MCC, not plain accuracy, are reported here.
 - **Tuning mattered most for Gaussian Naive Bayes.** Its cross-validated
   macro F1 on the training students rose from 0.211 at the default smoothing
-  value to 0.621 at the chosen value (see Section 7.3).
+  value to 0.621 at the chosen value (see Section 8.3).
 - **Limits of this comparison:** the scores come from one 80/20 split, so
   differences of around one percentage point should not be over-read. The
   reasons given above are plausible explanations for each model's behaviour,
   not proven causes.
 
-## 4. Repository contents
+## 5. Repository contents
 
 | Path | Contents |
 |---|---|
 | `app.py` | Streamlit entry point |
 | `requirements.txt`, `requirements-dev.txt` | Runtime and development dependencies, exact versions pinned |
 | `README.md` | Details about this project | 
-| `test_data.csv` | The 885-student held-out test split used by the app and by Section 3 |
+| `test_data.csv` | The 885-student held-out test split used by the app and by Section 4 |
 | `model/` | The five saved, trained classifiers (`.joblib`) |
 | `notebooks/gradpath_end_to_end_analysis.ipynb` | The full, top-to-bottom analysis and training notebook |
 | `results/evaluation_results.csv` | The single source of truth for every score in this README |
 | `data/student_records.csv` | A committed local cache of the full UCI dataset |
 | `docs/images/` | The dataset, score comparison, confusion matrix and curve images embedded above |
-| `src/gradpath/` | The importable backend and frontend package described in Section 7.5 |
+| `src/gradpath/` | The importable backend and frontend package described in Section 8.5 |
 | `runtime.txt` | Pins the Python version (3.12) the hosting platform should use to run this app |
 | `tools/` | The scripts that generate the images in `docs/images/` |
 | `tests/` | Unit and integration tests |
 
 
-## 5. Streamlit app
+## 6. Streamlit app
 
 The live app at https://gradpath-ai.streamlit.app/ loads one of the five
 already-trained, already-saved models and scores an uploaded CSV; it never
@@ -165,12 +164,12 @@ retrains anything. Features:
   run.
 - View all six evaluation metrics as metric cards, colour-coded to the
   selected model.
-- View the same ROC, Precision-Recall and calibration curves as Section 7.4,
+- View the same ROC, Precision-Recall and calibration curves as Section 8.4,
   **live** for the uploaded file and the selected model.
 
 
 
-## 6. How to run Streamlit app locally
+## 7. How to run Streamlit app locally
 
 ```bash
 git clone https://github.com/ShivkumarSSoni/gradpath-ai.git
@@ -187,14 +186,14 @@ The notebook can be run top to bottom the same way, after also installing
 scratch and reads `data/student_records.csv` instead of downloading the
 dataset again.
 
-## 7. Appendix: Additional Analysis
+## 8. Appendix: Additional Analysis
 
 The sections below go deeper than the core comparison above: the
 score and confusion-matrix breakdowns, the hyperparameter search, and the
 supporting curves that together justify the overall winner for this
 dataset.
 
-### 7.1 Score comparison, one panel per metric
+### 8.1 Score comparison, one panel per metric
 
 Each panel ranks the five classifiers on one metric, best first, with the
 exact score above every bar. Every classifier keeps the same colour in every
@@ -202,7 +201,7 @@ chart in this README, matching the Streamlit app.
 
 ![Held-out scores of the five classifiers, one panel per metric](docs/images/metric_comparison.png)
 
-### 7.2 Confusion matrices
+### 8.2 Confusion matrices
 
 A confusion matrix compares what each student actually did (rows) with what
 the model predicted (columns). Each cell shows the count of students and,
@@ -217,7 +216,7 @@ All five models mix up Enrolled students with Dropout and Graduate far more
 than they mix up Dropout and Graduate with each other, which is the same
 Enrolled weakness already visible in the comparison table above.
 
-### 7.3 Hyperparameters searched and chosen
+### 8.3 Hyperparameters searched and chosen
 
 Every classifier's hyperparameters were chosen by 5-fold stratified
 cross-validation on the training students only, scored by macro F1; the
@@ -244,7 +243,7 @@ also varies by model.
 | Support Vector Machine (SVM) | 3 | 15 | 0.692 |
 
 The Support Vector Machine's chosen `C = 10.0` sits at the top of its
-searched range; its validation curve (Section 7.4.5) shows the
+searched range; its validation curve (Section 8.4.5) shows the
 cross-validated score still rising at that point, so a wider grid might find
 an even better value, a direction not pursued here given the time available.
 Gaussian Naive Bayes needed the widest search: with the library's tiny
@@ -258,23 +257,23 @@ encoding and scaling) is fitted once on all training students before
 cross-validation begins, so each validation round is influenced, in a very
 small way, by scaling values that include its own validation students. This
 affects only the cross-validation scores used to choose hyperparameters; the
-held-out test scores in Section 3.1, which is what this project reports as
+held-out test scores in Section 4.1, which is what this project reports as
 the result, never see this effect, since the held-out students are
 completely separate from the whole training and tuning process.
 
-### 7.4 Curves
+### 8.4 Curves
 
 Computed once on the held-out students from each saved model's own
 predicted probabilities, and shown here as images; the Streamlit app draws
 the same three curve types live for whichever model and file a user selects.
 
-#### 7.4.1 ROC curves
+#### 8.4.1 ROC curves
 All five models separate Graduate students most easily and Enrolled students
-least easily, matching the AUC column in Section 3.1.
+least easily, matching the AUC column in Section 4.1.
 
 ![ROC curves for the five classifiers](docs/images/roc_curves.png)
 
-#### 7.4.2 Precision-Recall curves
+#### 8.4.2 Precision-Recall curves
 Precision-Recall matters most for the rare Enrolled outcome: a high ROC area
 can still hide weak performance on a small class, since ROC's false positive
 rate is diluted by the two larger classes. The Enrolled curve sits
@@ -282,14 +281,14 @@ noticeably below Dropout and Graduate for every model.
 
 ![Precision-Recall curves for the five classifiers](docs/images/precision_recall_curves.png)
 
-#### 7.4.3 Calibration curves
+#### 8.4.3 Calibration curves
 A calibration curve compares each model's predicted probability against how
 often that outcome actually occurred among held-out students at that
 predicted probability; a curve that tracks the diagonal is well calibrated.
 
 ![Calibration curves for the five classifiers](docs/images/calibration_curves.png)
 
-#### 7.4.4 Learning curves
+#### 8.4.4 Learning curves
 
 Each panel refits a model, with its already-chosen hyperparameters, on
 growing subsets of the training students. The Support Vector Machine shows
@@ -300,21 +299,21 @@ same kind is unlikely to change the ranking above.
 
 ![Learning curves for the five classifiers](docs/images/learning_curves.png)
 
-#### 7.4.5 Validation curves
+#### 8.4.5 Validation curves
 Each panel sweeps one model's main hyperparameter while the others stay
 fixed at their chosen value. Logistic Regression and the Decision Tree are
 close to flat across most of their range, so their exact chosen value
 matters little. Gaussian Naive Bayes peaks sharply at its chosen
 `var_smoothing = 0.1`. The Support Vector Machine's cross-validated score is
-still rising at `C = 10`, the edge case already flagged in Section 7.3.
+still rising at `C = 10`, the edge case already flagged in Section 8.3.
 
 ![Validation curves for the five classifiers](docs/images/validation_curves.png)
 
-#### 7.4.6 Training versus held-out score - quick overfitting check
+#### 8.4.6 Training versus held-out score - quick overfitting check
 
 A quick overfitting check that needs no new fitting: each already-fitted
 pipeline's macro F1 on the training students it was fitted on, next to its
-already-recorded macro F1 on the held-out students from Section 3.1.
+already-recorded macro F1 on the held-out students from Section 4.1.
 
 | Model | Training F1 (macro) | Held-out F1 (macro) | Gap (training minus held-out) |
 |---|---|---|---|
@@ -328,11 +327,11 @@ Gaussian Naive Bayes has the smallest gap, since its simplifying assumption
 keeps it from fitting the training students too closely in the first place.
 The Support Vector Machine has by far the largest gap, consistent with the
 widest gap already seen in its learning curve; it remains competitive on the
-held-out students regardless (Section 3.1), so this is overfitting on the
+held-out students regardless (Section 4.1), so this is overfitting on the
 training set rather than a sign that its held-out score is unreliable.
 Logistic Regression, the Decision Tree and kNN sit in between.
 
-### 7.5 Architecture
+### 8.5 Architecture
 
 The backend and frontend are separated into layers with a strict one-way
 call direction:
