@@ -114,7 +114,8 @@ probabilities on its own.
 | K-Nearest Neighbors (kNN) | Performance depends heavily on the scaled distance between students; competitive overall, weaker on the rare Enrolled outcome. Accuracy 0.716, AUC 0.824, Precision 0.657, Recall 0.610, F1 0.618, MCC 0.526. |
 | Gaussian Naive Bayes | Assumes the features are independent given the outcome, which does not hold well here, so it scores clearly lower than the other four. Accuracy 0.689, AUC 0.810, Precision 0.627, Recall 0.608, F1 0.614, MCC 0.487. |
 | Support Vector Machine (SVM) | A wide-margin boundary with calibrated probabilities; close to the top overall and the strongest model specifically at recognising the Enrolled outcome. Accuracy 0.756, AUC 0.843, Precision 0.697, Recall 0.683, F1 0.688, MCC 0.598. |
-| **Overall, Winner for selected dataset ?** | **Logistic Regression.** It has the best score on every one of the six metrics in Section 3.1. Its lead over the second-placed Support Vector Machine is about one percentage point of accuracy, close enough on 885 students that the two should be considered competitive, but Logistic Regression's ranking is consistent across all six metrics, which makes it the more defensible overall choice: 76.7% accuracy and an MCC of 0.614 on 885 students it never saw during training or tuning. |
+| **Overall Winner for selected dataset?** | **Logistic Regression.** It has the best score on every one of the six metrics in Section 3.1. Its lead over the second-placed Support Vector Machine is about one percentage point of accuracy, close enough on 885 students that the two should be considered competitive, but Logistic Regression's ranking is consistent across all six metrics, which makes it the more defensible overall choice: 76.7% accuracy and an MCC of 0.614 on 885 students it never saw during training or tuning. |
+
 
 Further patterns worth noting:
 
